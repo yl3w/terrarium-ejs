@@ -1,7 +1,7 @@
 package com.jamaav.model;
 
 public interface Element {
-  public Terrarium act(Terrarium initial);
+  public Surrounding act(Terrarium initial, Surrounding surrounding);
 
   public char asKey();
 }

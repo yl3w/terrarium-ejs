@@ -11,4 +11,9 @@ abstract class AbstractElement implements Element {
   public char asKey() {
     return keyToElement.asKey();
   }
+
+  @Override
+  public Surrounding act(Terrarium initial, Surrounding surrounding) {
+    return surrounding;
+  }
 }

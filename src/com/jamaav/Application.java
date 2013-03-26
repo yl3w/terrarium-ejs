@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -18,12 +20,18 @@ import com.jamaav.model.Terrarium;
 
 public class Application {
 
+  private static final int RUN_DURATION = 2 * 60 * 1000;
+  private static final int THREAD_COUNT = 5;
+
   public static void main(String[] args) {
     final Application application = new Application();
     application.doMain(args);
   }
 
   private void doMain(String[] args) {
+    final ExecutorService threadPool = Executors
+        .newFixedThreadPool(THREAD_COUNT);
+
     final ApplicationOptions options = new ApplicationOptions();
     final CmdLineParser parser = new CmdLineParser(options);
 
@@ -39,11 +47,22 @@ public class Application {
     final ModelFactory factory = instantiateFactory(factoryType);
     final char[][] characters = readInitial(options.file);
     final Terrarium terrarium = factory.createTerrarium(characters);
+    terrarium.start(threadPool);
+    
+    try {
+      Thread.sleep(RUN_DURATION);
+    } catch (Exception ex) {
+      // safe to ignore
+    }
+    terrarium.stop();
+    threadPool.shutdown();
+
     // kick of the lifecycle of the terrarium
     final char[][] asViewed = terrarium.printable();
     for (final char[] line : asViewed) {
       System.out.println(new String(line));
     }
+
   }
 
   private char[][] readInitial(File file) {
